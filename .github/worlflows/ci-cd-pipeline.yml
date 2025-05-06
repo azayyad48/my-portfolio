@@ -1,0 +1,36 @@
+name: CI/CD Pipeline for React Portfolio
+
+# Trigger the workflow on push to the main branch or pull request
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'  # Use the appropriate Node.js version for your project
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build the project
+      run: npm run build
+
+    - name: Deploy to EC2 (if using EC2)
+      if: github.ref == 'refs/heads/main'
+      run: |
+        ssh -i /path/to/your/private/key.pem ec2-user@your-ec2-ip 'cd /var/www/html && rm -rf * && cp -r ~/path/to/build/* . && sudo systemctl restart nginx'
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
